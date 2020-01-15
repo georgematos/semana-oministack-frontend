@@ -1,24 +1,47 @@
-import React, { useState } from 'react';
-import Header from './Header'
-// Componente: bloco isolado de HTML, CSS e JS o qual não interfere no restante da aplicação
-// Propriedade: informações que um componente pai passa para o componente filho
-// Estedo: informações mantidas pelo componente (Lembrar so conceito de imutabilidade)
+import React, { useEffect, useState } from 'react';
+
+import './services/api'
+import './Global.css'
+import './App.css'
+import './components/DevForm/styles.css'
+import './components/DevItem/styles.css'
+import './Main.css'
+import api from './services/api';
+import DevItem from './components/DevItem';
+import DevForm from './components/DevForm';
 
 function App() {
-  const [counter, setCounter] = useState(0);
+  const [devs, setDevs] = useState([]);
 
-  function incrementCounter() {
-    setCounter(counter + 1);
+  useEffect(() => {
+    async function loadDevs() {
+      const response = await api.get('/devs');
+
+      setDevs(response.data);
+    }
+    loadDevs();
+  }, []);
+
+  async function handleAddDev(data) {
+    const response = await api.post('/devs', data);
+    setDevs([...devs, response.data]);
   }
 
   return (
-    <>
-      <Header title="Dashboard1" />
-      <Header title="Dashboard2" />
-      <Header title="Dashboard3" />
-      <h1>Contador: {counter}</h1>
-      <button onClick={incrementCounter}>Add</button>
-    </>
+    <div id="app">
+      <aside>
+        <strong>Cadastrar</strong>
+        <DevForm onSubmit={handleAddDev} />
+      </aside>
+
+      <main>
+        <ul>
+          {devs.map(dev => (
+            <DevItem key={dev._id} dev={dev} />
+          ))}
+        </ul>
+      </main>
+    </div>
   );
 }
 
